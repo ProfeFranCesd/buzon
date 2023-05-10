@@ -29,5 +29,39 @@ function uploadVideo(fileData) {
     console.error('Error al subir archivo:', error);
   });
 }
+var stream;
+    var recorder;
+    var chunks = [];
 
+    // Obtener acceso a la cámara del dispositivo
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(function (mediaStream) {
+        stream = mediaStream;
+        var video = document.querySelector('#video');
+        video.srcObject = stream;
+        video.play();
+      })
+      .catch(function (error) {
+        console.log("Error al acceder a la cámara: " + error);
+      });
+
+    // Comenzar a grabar cuando se hace clic en el botón "Grabar"
+    var botonGrabar = document.querySelector('#boton-grabar');
+    botonGrabar.addEventListener('click', function () {
+      recorder = new MediaRecorder(stream);
+      recorder.ondataavailable = function (event) {
+        chunks.push(event.data);
+      };
+      recorder.start();
+    });
+
+    // Detener la grabación cuando se hace clic en el botón "Detener"
+    var botonDetener = document.querySelector('#boton-detener');
+    botonDetener.addEventListener('click', function () {
+      recorder.stop();
+      var blob = new Blob(chunks, { type: "video/webm" });
+      var url = URL.createObjectURL(blob);
+      var video = document.querySelector('#video');
+      video.src = url;
+    });
 // Inicializa la API de
